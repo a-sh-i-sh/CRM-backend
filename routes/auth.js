@@ -112,7 +112,8 @@ router.post("/login", async (req, res) => {
           email: userMatch.email,
           role: userMatch.role,
         },
-        process.env.TOKEN_SECRET
+        "thisisownselfmadeasecretkeyusedafterlogin"
+        // process.env.TOKEN_SECRET
       );
       res.header("auth-token", token).json({
         user: `${userMatch.firstName} ${userMatch.lastName}`,
