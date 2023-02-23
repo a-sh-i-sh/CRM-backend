@@ -6,6 +6,7 @@ const nodemailer = require("nodemailer");
 const { google } = require("googleapis");
 const fs = require("fs");
 const ejs = require("ejs");
+require("dotenv").config();
 
 const User = require("../models/User");
 const verifyToken = require("../middlewares/ForgetPassword/verifyToken");
@@ -112,8 +113,8 @@ router.post("/login", async (req, res) => {
           email: userMatch.email,
           role: userMatch.role,
         },
-        "thisisownselfmadeasecretkeyusedafterlogin"
-        // process.env.TOKEN_SECRET
+        process.env.TOKEN_SECRET,
+        { expiresIn: "2m" }
       );
       res.header("auth-token", token).json({
         user: `${userMatch.firstName} ${userMatch.lastName}`,
@@ -152,7 +153,7 @@ router.post("/forget-password", async (req, res) => {
           role: userMatch.role,
         },
         process.env.TOKEN_SECRET,
-        { expiresIn: "10m" }
+        { expiresIn: "2m" }
       );
 
       const link =`https://sridharrajaram-crmapp.herokuapp.com/api/auth/reset-password/${userMatch._id}/${token}`;
