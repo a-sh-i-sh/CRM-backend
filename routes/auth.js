@@ -53,6 +53,38 @@ async function sendMail(receiverMail, data) {
   }
 }
 
+const createAdmin = async () => {
+  const ADMIN_CREDENTIAL = JSON.parse(process.env.ADMIN_CREDENTIAL);
+  const { error } = registerValidation(ADMIN_CREDENTIAL);
+  if (error) {
+    console.log("message: ", error.details[0].message);
+  }
+
+  // Check for no duplicate email
+  const userMatch = await User.findOne({ email: ADMIN_CREDENTIAL.email });
+  if (userMatch) {
+   console.log("Admin email address already used");
+  }else{
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(ADMIN_CREDENTIAL.password, salt);
+  
+    const newUser = new User({
+      firstName: ADMIN_CREDENTIAL.firstName,
+      lastName: ADMIN_CREDENTIAL.lastName,
+      email: ADMIN_CREDENTIAL.email,
+      password: hashPassword,
+      role: ADMIN_CREDENTIAL.role,
+    })
+
+    try {
+      const savedUser = await newUser.save();
+      console.log("Admin account has been created successfully");
+    } catch (error) {
+      // console.log("Email address already used",error);
+    }}
+}
+
 router.post("/register", async (req, res) => {
   // Validate registration form data
   // delete confirm password cause validation schema does not have this field
@@ -212,4 +244,4 @@ router.post("/reset-password/:id/:token", verifyToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = { router, createAdmin };
