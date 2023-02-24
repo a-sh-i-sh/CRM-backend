@@ -86,7 +86,7 @@ const createAdmin = async () => {
     }}
 }
 
-router.post("/createuser", async (req, res) => {
+router.post("/createUser", async (req, res) => {
   // Validate registration form data
   // delete confirm password cause validation schema does not have this field
   delete req.body.confirmPassword;
