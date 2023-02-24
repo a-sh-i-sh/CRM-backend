@@ -146,7 +146,7 @@ router.post("/login", async (req, res) => {
           role: userMatch.role,
         },
         process.env.TOKEN_SECRET,
-        { expiresIn: "5m" }
+        { expiresIn: "15m" }
       );
       res.header("auth-token", token).json({
         user: `${userMatch.firstName} ${userMatch.lastName}`,
