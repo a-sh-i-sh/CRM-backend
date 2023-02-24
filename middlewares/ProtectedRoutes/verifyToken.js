@@ -5,7 +5,7 @@ const User = require("../../models/User");
 // Format of token
 // Authorization: Bearer <token>
 
-async function auth(req, res, next) {
+ const auth = async (req, res, next) => {
   // Get auth header value
   const bearerHeader = req.headers.authorization;
   if (bearerHeader != undefined) {
