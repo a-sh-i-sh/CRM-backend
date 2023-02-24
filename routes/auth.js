@@ -74,7 +74,7 @@ const createAdmin = async () => {
       lastName: ADMIN_CREDENTIAL.lastName,
       email: ADMIN_CREDENTIAL.email,
       password: hashPassword,
-      role: ADMIN_CREDENTIAL.role,
+      role: "Admin",
     })
 
     try {
@@ -85,7 +85,7 @@ const createAdmin = async () => {
     }}
 }
 
-router.post("/register", async (req, res) => {
+router.post("/createuser", async (req, res) => {
   // Validate registration form data
   // delete confirm password cause validation schema does not have this field
   delete req.body.confirmPassword;
@@ -97,7 +97,7 @@ router.post("/register", async (req, res) => {
   // Check for no duplicate email
   const userMatch = await User.findOne({ email: req.body.email });
   if (userMatch) {
-    return res.status(400).json({ message: "Email address already used" });
+    return res.status(400).json({ message: "Email address already used", role: userMatch.role });
   }
 
   // Hash the password
@@ -109,15 +109,15 @@ router.post("/register", async (req, res) => {
     lastName: req.body.lastName,
     email: req.body.email,
     password: hashPassword,
-    role: req.body.role,
+    role: "Employee",
   });
 
   try {
     const savedUser = await newUser.save();
-    res.status(201).json({ message: "Account has been created successfully" });
+    res.status(201).json({ message: "Account has been created successfully", role: newUser.role });
   } catch (error) {
     console.log(error);
-    res.status(400).json({ message: "Email address already used" });
+    res.status(400).json({ message: "Email address already used", role: newUser.role });
   }
 });
 
@@ -146,10 +146,12 @@ router.post("/login", async (req, res) => {
           role: userMatch.role,
         },
         process.env.TOKEN_SECRET,
-        { expiresIn: "2m" }
+        { expiresIn: "5m" }
       );
       res.header("auth-token", token).json({
         user: `${userMatch.firstName} ${userMatch.lastName}`,
+        role: userMatch.role,
+        message: `Login successfully as a ${userMatch.role}`,
         token: token,
       });
     } else {
@@ -166,82 +168,82 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.post("/forget-password", async (req, res) => {
-  // Validate forget password form data
-  const { error } = forgetPasswordValidation(req.body);
-  if (error) {
-    return res.status(400).send({ message: error.details[0].message });
-  }
+// router.post("/forget-password", async (req, res) => {
+//   // Validate forget password form data
+//   const { error } = forgetPasswordValidation(req.body);
+//   if (error) {
+//     return res.status(400).send({ message: error.details[0].message });
+//   }
 
-  try {
-    const userMatch = await User.findOne({ email: req.body.email });
-    if (userMatch) {
-      // Create and assign new token with expiration time
-      const token = jwt.sign(
-        {
-          _id: userMatch._id,
-          name: `${userMatch.firstName} ${userMatch.lastName}`,
-          email: userMatch.email,
-          role: userMatch.role,
-        },
-        process.env.TOKEN_SECRET,
-        { expiresIn: "2m" }
-      );
+//   try {
+//     const userMatch = await User.findOne({ email: req.body.email });
+//     if (userMatch) {
+//       // Create and assign new token with expiration time
+//       const token = jwt.sign(
+//         {
+//           _id: userMatch._id,
+//           name: `${userMatch.firstName} ${userMatch.lastName}`,
+//           email: userMatch.email,
+//           role: userMatch.role,
+//         },
+//         process.env.TOKEN_SECRET,
+//         { expiresIn: "2m" }
+//       );
 
-      const link =`https://sridharrajaram-crmapp.herokuapp.com/api/auth/reset-password/${userMatch._id}/${token}`;
+//       const link =`https://sridharrajaram-crmapp.herokuapp.com/api/auth/reset-password/${userMatch._id}/${token}`;
 
-      const data = await ejs.renderFile(
-        path.join(__dirname, "..", "views", "mail-template.ejs"),
-        {
-          link: link,
-        }
-      );
+//       const data = await ejs.renderFile(
+//         path.join(__dirname, "..", "views", "mail-template.ejs"),
+//         {
+//           link: link,
+//         }
+//       );
 
-      await sendMail(userMatch.email, data);
+//       await sendMail(userMatch.email, data);
 
-      res.send(
-        "Password reset link has been sent to your email. Please check your mailbox."
-      );
-    } else {
-      res.status(401).json({
-        message: "This email is not registered",
-      });
-    }
-  } catch (error) {
-    console.log(error.message);
-    res.status(401).json({
-      message: "This email is not registered",
-    });
-  }
-});
+//       res.send(
+//         "Password reset link has been sent to your email. Please check your mailbox."
+//       );
+//     } else {
+//       res.status(401).json({
+//         message: "This email is not registered",
+//       });
+//     }
+//   } catch (error) {
+//     console.log(error.message);
+//     res.status(401).json({
+//       message: "This email is not registered",
+//     });
+//   }
+// });
 
-router.get("/reset-password/:id/:token", verifyToken, (req, res) => {
-  res.render(path.join(__dirname, "..", "views", "reset-password.ejs"));
-});
+// router.get("/reset-password/:id/:token", verifyToken, (req, res) => {
+//   res.render(path.join(__dirname, "..", "views", "reset-password.ejs"));
+// });
 
-router.post("/reset-password/:id/:token", verifyToken, async (req, res) => {
-  const { error } = resetPasswordValidation(req.body);
-  if (error) {
-    return res
-      .status(400)
-      .send(error.details[0].message + ". Please Try again");
-  }
+// router.post("/reset-password/:id/:token", verifyToken, async (req, res) => {
+//   const { error } = resetPasswordValidation(req.body);
+//   if (error) {
+//     return res
+//       .status(400)
+//       .send(error.details[0].message + ". Please Try again");
+//   }
 
-  try {
-    // Hash the password
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(req.body.password, salt);
+//   try {
+//     // Hash the password
+//     const salt = await bcrypt.genSalt(10);
+//     const hashPassword = await bcrypt.hash(req.body.password, salt);
 
-    await User.findOneAndUpdate(
-      { _id: req.user._id },
-      { password: hashPassword }
-    );
-    res.send(
-      "Your password has been changed successfully. Please login with your new password"
-    );
-  } catch (err) {
-    res.status(500).send("Something went wrong. Please try again");
-  }
-});
+//     await User.findOneAndUpdate(
+//       { _id: req.user._id },
+//       { password: hashPassword }
+//     );
+//     res.send(
+//       "Your password has been changed successfully. Please login with your new password"
+//     );
+//   } catch (err) {
+//     res.status(500).send("Something went wrong. Please try again");
+//   }
+// });
 
 module.exports = { router, createAdmin };
