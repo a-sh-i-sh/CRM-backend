@@ -17,7 +17,7 @@ const {
   loginValidation,
   forgetPasswordValidation,
   resetPasswordValidation,
-} = require("../validation");
+} = require("../validators/auth");
 
 const CLIENT_ID = process.env.OAUTH_CLIENT_ID;
 const CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET;
@@ -25,7 +25,8 @@ const REDIRECT_URL = process.env.OAUTH_REDIRECT_URL;
 const REFRESH_TOKEN = process.env.OAUTH_REFRESH_TOKEN;
 const ACCESS_TOKEN = process.env.OAUTH_ACCESS_TOKEN;
 
-async function sendMail(receiverMail, data) {
+// async function sendMail(receiverMail, data) {
+const sendMail = async (receiverMail, data) => {
   try {
     const transport = nodemailer.createTransport({
       service: "gmail",

@@ -1,8 +1,20 @@
 const mongoose = require("mongoose");
 
 const serviceRequestSchema = new mongoose.Schema({
+  projectId: {
+		type: mongoose.Schema.Types.ObjectId,
+		required: true,
+	},
+	versionId: {
+		type: mongoose.Schema.Types.ObjectId,
+		required: true,
+	},
+	milestoneId: {
+		type: mongoose.Schema.Types.ObjectId,
+		required: true,
+	},
   requestedBy: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
   subject: {
@@ -10,7 +22,7 @@ const serviceRequestSchema = new mongoose.Schema({
     required: true,
   },
   assigned: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
   priority: {
