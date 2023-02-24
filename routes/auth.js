@@ -92,13 +92,13 @@ router.post("/createuser", async (req, res) => {
   delete req.body.confirmPassword;
   const { error } = registerValidation(req.body);
   if (error) {
-    return res.status(400).send({ message: error.details[0].message });
+    return res.status(400).send({ status: false, message: error.details[0].message });
   }
 
   // Check for no duplicate email
   const userMatch = await User.findOne({ email: req.body.email });
   if (userMatch) {
-    return res.status(400).json({ message: "Email address already used", role: userMatch.role });
+    return res.status(400).json({ status: false, message: "Email address already used", role: userMatch.role });
   }
 
   // Hash the password
@@ -115,10 +115,10 @@ router.post("/createuser", async (req, res) => {
 
   try {
     const savedUser = await newUser.save();
-    res.status(201).json({ message: "Account has been created successfully", role: newUser.role });
+    res.status(201).json({ status: true, message: "Account has been created successfully", role: newUser.role });
   } catch (error) {
     console.log(error);
-    res.status(400).json({ message: "Email address already used", role: newUser.role });
+    res.status(400).json({ status: false, message: "Unable to create account", role: newUser.role });
   }
 });
 
@@ -126,7 +126,7 @@ router.post("/login", async (req, res) => {
   // Validate login form data
   const { error } = loginValidation(req.body);
   if (error) {
-    return res.status(400).send({ message: error.details[0].message });
+    return res.status(400).send({ status: false, message: error.details[0].message });
   }
 
   const userMatch = await User.findOne({ email: req.body.email });
@@ -147,9 +147,10 @@ router.post("/login", async (req, res) => {
           role: userMatch.role,
         },
         process.env.TOKEN_SECRET,
-        { expiresIn: "15m" }
+        { expiresIn: "60m" }
       );
       res.header("auth-token", token).json({
+        status: true,
         user: `${userMatch.firstName} ${userMatch.lastName}`,
         role: userMatch.role,
         message: `Login successfully as a ${userMatch.role}`,
@@ -157,7 +158,8 @@ router.post("/login", async (req, res) => {
       });
     } else {
       res.status(401).json({
-        message: "invalid username or password",
+        status: false,
+        message: "Invalid username or password",
       });
     }
   } else {
@@ -165,7 +167,7 @@ router.post("/login", async (req, res) => {
     let fakePass = `$2b$10$invalidusernameaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`;
     await bcrypt.compare(req.body.password, fakePass);
 
-    res.status(401).json({ message: "Invalid username or password." });
+    res.status(401).json({ status: false, message: "Invalid username or password" });
   }
 });
 

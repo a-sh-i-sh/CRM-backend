@@ -5,15 +5,33 @@ const verifyToken = require("../middlewares/ProtectedRoutes/verifyToken");
 
 router.post("/", verifyToken, async (req, res) => {
   try {
-    let page = req.page;
-    console.log("page",Number(req.page))
-    let limit = Number(req.limit);
-    let skip = (page - 1) * limit;
+    const page = Number(req.body.page);
+    const limit = Number(req.body.limit);
+    const skip = (page - 1) * limit;
+    const sort = req.body.sort;
+    const search = req.body.search;
+    const fieldToSearchData = [
+      {firstName: { $regex: search, $options: "i" }},
+      {lastName: { $regex: search, $options: "i" }},
+      {email: { $regex: search, $options: "i" }},
+    ]
+    const queryDocument = {
+      $and: [
+        { $or: fieldToSearchData },
+        { role: "Employee" }
+      ]
+    }
 
-    let users = await User.find({ role: "Employee" }, { password: 0 }).skip(skip).limit(limit);
-    res.json({ Employee_List: users, Total_Records: users.length });
+    const users = await User.find(queryDocument).skip(skip).limit(limit);
+    const totalRecords = await User.countDocuments(queryDocument);
+    if(users.length === 0){
+      res.status(404).json({ status: false, message: "Employee List not found", employeeList: users, page, pageRecords: users.length, totalRecords })
+    }
+    else
+    res.json({ status: true, message: "Employee List found successfully", employeeList: users, page, pageRecords: users.length, totalRecords });
   } catch (error) {
-    res.json(error);
+    console.log(error)
+    res.status(400).json({ status: false, message: "Unable to fetch Employee List"});
   }
 });
 
