@@ -5,6 +5,7 @@ const verifyToken = require("../middlewares/ProtectedRoutes/verifyToken");
 
 router.post("/", verifyToken, async (req, res) => {
   try {
+    console.log(req.body);
     const page = Number(req.body.page);
     const limit = Number(req.body.limit);
     const skip = (page - 1) * limit;
