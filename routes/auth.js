@@ -9,7 +9,7 @@ const ejs = require("ejs");
 require("dotenv").config();
 
 const User = require("../models/User");
-const verifyToken = require("../middlewares/ForgetPassword/verifyToken");
+const verifyToken = require("../middlewares/ProtectedRoutes/verifyToken");
 
 
 const {
@@ -86,7 +86,7 @@ const createAdmin = async () => {
     }}
 }
 
-router.post("/createUser", async (req, res) => {
+router.post("/createuser", verifyToken, async (req, res) => {
   // Validate registration form data
   // delete confirm password cause validation schema does not have this field
   delete req.body.confirmPassword;
