@@ -3,6 +3,26 @@ const router = require("express").Router();
 const User = require("../models/User");
 const verifyToken = require("../middlewares/ProtectedRoutes/verifyToken");
 
+router.post("/", verifyToken, async (req,res) => {
+  try{
+    const {id} = req.body;
+    const users = await User.findOne({_id: id})
+    if(users){
+    res
+    .status(201)
+    .json({ status: true, message: "Employee found successfully!", user: users });
+    }
+    else{
+      res
+      .status(404)
+      .json({ status: false, message: "Employee do not exits" });
+    }
+  }catch(err){
+    res
+    .status(400)
+    .json({ status: false, message: "Unable to fetch Employee Data" });
+  }
+})
 
 router.post("/list", verifyToken, async (req, res) => {
   try {
@@ -52,67 +72,21 @@ router.post("/list", verifyToken, async (req, res) => {
   }
 });
 
-router.post("/:id", verifyToken, async (req,res) => {
-  try{
-    const users = await User.findOne({_id: req.params.id})
-    if(users){
-    res
-    .status(201)
-    .json({ status: true, message: "Employee found successfully!", user: users });
-    }
-    else{
-      res
-      .status(404)
-      .json({ status: false, message: "Employee do not exits" });
-    }
-  }catch(err){
-    res
-    .status(400)
-    .json({ status: false, message: "Unable to fetch Employee Data" });
-  }
-})
-
-router.patch("/update/:id", verifyToken, async (req, res) => {
+router.post("/delete", verifyToken, async (req,res) => {
   try {
-    const user = await User.findOne({ _id: req.params.id });
-    if (user) {
-      const { firstName, lastName, email, password, role } = req.body;
-      if (firstName) user.firstName = firstName;
-      if (lastName) user.lastName = lastName;
-      if (email) user.email = email;
-      if (role) user.role = role;
-      if (password) {
-        // Hash the password
-        const salt = await bcrypt.genSalt(10);
-        const hashPassword = await bcrypt.hash(password, salt);
-        user.password = hashPassword;
-      }
-      await user.save();
-      res
-        .status(201)
-        .json({ status: true, message: "Employee Data updated successfully!" });
-    } 
-    else {
-      // user do not exist
-      res.status(404).json({ status: false, message: "Employee do not exists" });
-    }
-  } catch (err) {
-    // user id may be incorrect or undefined
-    res.status(400).json({
-      status: false,
-      message: "Unable to fetch Employee Data",
-    });
-  }
-});
-
-router.delete("/delete/:id", verifyToken, async (req,res) => {
-  try {
-      const result = await User.deleteOne({_id: req.params.id})
-      console.log(result)
+     const {id} = req.body;
+      const result = await User.deleteOne({_id: id[0]})
+      if(result.deletedCount !== 0){
       res.status(201).json({
         status: true,
         message: "Employee deleted successfully!",
       });
+    }else {
+      res.status(404).json({
+        status: false,
+        message: "Employee do not exits",
+      });
+    }
   }catch(err) {
         // user id may be incorrect or undefined
         res.status(404).json({

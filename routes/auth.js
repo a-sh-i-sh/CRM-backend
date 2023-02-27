@@ -11,7 +11,6 @@ require("dotenv").config();
 const User = require("../models/User");
 const verifyToken = require("../middlewares/ProtectedRoutes/verifyToken");
 
-
 const {
   registerValidation,
   loginValidation,
@@ -52,7 +51,7 @@ const sendMail = async (receiverMail, data) => {
   } catch (error) {
     return error;
   }
-}
+};
 
 const createAdmin = async () => {
   const ADMIN_CREDENTIAL = JSON.parse(process.env.ADMIN_CREDENTIAL);
@@ -64,27 +63,28 @@ const createAdmin = async () => {
   // Check for no duplicate email
   const userMatch = await User.findOne({ email: ADMIN_CREDENTIAL.email });
   if (userMatch) {
-   console.log("Admin email address already used");
-  }else{
+    console.log("Admin email address already used");
+  } else {
     // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(ADMIN_CREDENTIAL.password, salt);
-  
+
     const newUser = new User({
       firstName: ADMIN_CREDENTIAL.firstName,
       lastName: ADMIN_CREDENTIAL.lastName,
       email: ADMIN_CREDENTIAL.email,
       password: hashPassword,
       role: "Admin",
-    })
+    });
 
     try {
       const savedUser = await newUser.save();
       console.log("Admin account has been created successfully");
     } catch (error) {
       // console.log("Email address already used",error);
-    }}
-}
+    }
+  }
+};
 
 router.post("/createuser", verifyToken, async (req, res) => {
   // Validate registration form data
@@ -92,33 +92,75 @@ router.post("/createuser", verifyToken, async (req, res) => {
   delete req.body.confirmPassword;
   const { error } = registerValidation(req.body);
   if (error) {
-    return res.status(400).send({ status: false, message: error.details[0].message });
-  }
-
-  // Check for no duplicate email
-  const userMatch = await User.findOne({ email: req.body.email });
-  if (userMatch) {
-    return res.status(400).json({ status: false, message: "Email address already used", role: userMatch.role });
+    return res
+      .status(400)
+      .send({ status: false, message: error.details[0].message });
   }
 
   // Hash the password
   const salt = await bcrypt.genSalt(10);
   const hashPassword = await bcrypt.hash(req.body.password, salt);
 
-  const newUser = new User({
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    email: req.body.email,
-    password: hashPassword,
-    role: "Employee",
-  });
-
   try {
-    const savedUser = await newUser.save();
-    res.status(201).json({ status: true, message: "Account has been created successfully", role: newUser.role });
+    if (req.body.id) {
+      let users = await User.findOne({ _id: req.body.id });
+
+      if (users.email !== req.body.email) {
+        // Check for no duplicate email
+        const userMatch = await User.findOne({ email: req.body.email });
+        if (userMatch) {
+          return res.status(400).json({
+            status: false,
+            message: "Email address already used",
+            role: userMatch.role,
+          });
+        }
+      }
+
+      users.firstName = req.body.firstName;
+      users.lastName = req.body.lastName;
+      users.email = req.body.email;
+      users.password = hashPassword;
+      users.role = "Employee";
+
+      const savedUser = await users.save();
+      res.status(201).json({
+        status: true,
+        message: "Account updated successfully",
+        role: users.role,
+      });
+    } else {
+      // Check for no duplicate email
+      const userMatch = await User.findOne({ email: req.body.email });
+      if (userMatch) {
+        return res.status(400).json({
+          status: false,
+          message: "Email address already used",
+          role: userMatch.role,
+        });
+      }
+
+      let newUser = new User({
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        password: hashPassword,
+        role: "Employee",
+      });
+
+      const savedUser = await newUser.save();
+      res.status(201).json({
+        status: true,
+        message: "Account has been created successfully",
+        role: newUser.role,
+      });
+    }
   } catch (error) {
     console.log(error);
-    res.status(400).json({ status: false, message: "Unable to create account", role: newUser.role });
+    res.status(400).json({
+      status: false,
+      message: "Unable to create account",
+    });
   }
 });
 
@@ -127,7 +169,9 @@ router.post("/login", async (req, res) => {
   console.log("body",req.body)
   const { error } = loginValidation(req.body);
   if (error) {
-    return res.status(400).send({ status: false, message: error.details[0].message });
+    return res
+      .status(400)
+      .send({ status: false, message: error.details[0].message });
   }
 
   const userMatch = await User.findOne({ email: req.body.email });
@@ -148,7 +192,7 @@ router.post("/login", async (req, res) => {
           role: userMatch.role,
         },
         process.env.TOKEN_SECRET,
-        { expiresIn: "60m" }
+        { expiresIn: "1d" }
       );
       res.header("auth-token", token).json({
         status: true,
@@ -168,7 +212,9 @@ router.post("/login", async (req, res) => {
     let fakePass = `$2b$10$invalidusernameaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`;
     await bcrypt.compare(req.body.password, fakePass);
 
-    res.status(401).json({ status: false, message: "Invalid username or password" });
+    res
+      .status(401)
+      .json({ status: false, message: "Invalid username or password" });
   }
 });
 
