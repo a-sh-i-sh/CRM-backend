@@ -35,7 +35,7 @@ app.set("view engine", "ejs");
 app.use(cors());
 app.use(helmet());
 app.use("/api/auth", authRoute.router);
-app.use("/api/users", usersRoute);
+app.use("/api/users/employee", usersRoute);
 app.use("/api/leads", leadsRoute);
 app.use("/api/contacts", contactsRoute);
 app.use("/api/serviceRequests", serviceRequestsRoute);
