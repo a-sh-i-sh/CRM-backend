@@ -124,6 +124,7 @@ router.post("/createUser", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   // Validate login form data
+  console.log("body",req.body)
   const { error } = loginValidation(req.body);
   if (error) {
     return res.status(400).send({ status: false, message: error.details[0].message });
