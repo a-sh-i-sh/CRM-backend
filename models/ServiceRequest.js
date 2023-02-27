@@ -22,7 +22,7 @@ const serviceRequestSchema = new mongoose.Schema({
     required: true,
   },
   assigned: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: [mongoose.Schema.Types.ObjectId],
     required: true,
   },
   priority: {
