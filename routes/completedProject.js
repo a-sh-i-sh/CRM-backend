@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const User = require("../models/User")
-const CompletedProject = require("../models/completedProject");
+const Projects = require("../models/Project");
 const verifyToken = require("../middlewares/ProtectedRoutes/verifyToken");
 
 router.post("/list", verifyToken, async (req, res) => {
@@ -9,27 +9,27 @@ router.post("/list", verifyToken, async (req, res) => {
         const page = Number(req.body.page);
         const limit = Number(req.body.limit);
         const skip = (page - 1) * limit;
-        const tasks = await CompletedProject.find({}).skip(skip).limit(limit);
-        const totalRecords = await CompletedProject.countDocuments({});
+        const projects = await Projects.find({status:"completed"}).skip(skip).limit(limit);
+        const totalRecords = await Projects.countDocuments({status:"completed"});
         const pages = (totalRecords % limit === 0) ? Math.trunc(totalRecords / limit) : (Math.trunc(totalRecords / limit) + 1);
-        if (tasks.length === 0) {
+        if (projects.length === 0) {
             res.status(200).json({
                 status: true,
                 message: "Projects List not found",
-                ProjectList: tasks,
+                ProjectList: projects,
                 page,
                 pages,
-                pageRecords: tasks.length,
+                pageRecords: projects.length,
                 totalRecords,
             });
         } else
             res.json({
                 status: true,
                 message: "Projects List found successfully",
-                ProjectList: tasks,
+                ProjectList: projects,
                 page,
                 pages,
-                pageRecords: tasks.length,
+                pageRecords: projects.length,
                 totalRecords,
             });
     } catch (error) {
@@ -39,19 +39,14 @@ router.post("/list", verifyToken, async (req, res) => {
             .json({ status: false, message: "Unable to fetch Tasks List" });
     }
 });
-router.post("/add", verifyToken, async (req, res) => {
+router.post("/status", verifyToken, async (req, res) => {
     console.log(req.body);
-    let newTask 
     try {
-            if(task_id){
-                const tt = await CompletedProject.updateOne({_id:task_id},
-                 { $set: req.body
+                const tt = await Projects.updateOne({_id:req.body.project_id},
+                 { $set: {
+                    status: req.body.status,
+                 }
                  } )
-            }else{
-             newTask = new CompletedProject(req.body)
-            const savedUser = await newTask.save();
-        }
-            // console.log(user);
             res.status(201).json({
                 status: true,
                 message: "Project Added Successfully!!",
@@ -63,7 +58,7 @@ router.post("/add", verifyToken, async (req, res) => {
             message: "Unable to add Project",
         });
     }
-});
+  });
 
 // router.post("/delete", verifyToken, async (req, res) => {
 //     try {
@@ -90,30 +85,30 @@ router.post("/add", verifyToken, async (req, res) => {
 //            });
 //      }
 // });
-// router.post("/getTask", verifyToken, async (req, res) => {
-//     try {
-//         const { id } = req.body;
-//         const task = await Tasks.findOne({ _id: id });
-//         if (task) {
-//             res.status(201).json({
-//                 status: true,
-//                 task: task,
-//                 message: "Task deleted successfully!",
-//             });
-//         } else {
-//             res.status(404).json({
-//                 status: false,
-//                 message: "Task do not exits",
-//             });
-//         }
-//     } catch (err) {
-//         // user id may be incorrect or undefined
-//         console.log(err);
-//         res.status(404).json({
-//             status: false,
-//             message: "Unable to fetch Task",
-//         });
-//     }
-// });
+router.post("/view", verifyToken, async (req, res) => {
+    try {
+        const { project_id } = req.body;
+        const project = await Projects.findOne({ _id: project_id });
+        if (project) {
+            res.status(201).json({
+                status: true,
+                project: project,
+                message: "Project found successfully!",
+            });
+        } else {
+            res.status(404).json({
+                status: false,
+                message: "Project do not exits",
+            });
+        }
+    } catch (err) {
+        // user id may be incorrect or undefined
+        console.log(err);
+        res.status(404).json({
+            status: false,
+            message: "Unable to fetch Project",
+        });
+    }
+});
 
 module.exports = router;

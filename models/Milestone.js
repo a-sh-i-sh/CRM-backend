@@ -9,27 +9,26 @@ const milestoneSchema = new mongoose.Schema({
 		type: mongoose.Schema.Types.ObjectId,
 		required: true,
 	},
-	versionId: {
-		type: mongoose.Schema.Types.ObjectId,
-		required: true,
-	},
+	// versionId: {
+	// 	type: mongoose.Schema.Types.ObjectId,
+	// 	required: true,
+	// },
 	assigned: {
 		type: mongoose.Schema.Types.ObjectId,
-		required: true,
 	},
 	status: {
 		type: String,
 		required: true,
 	},
-    serviceRequests: {
-		type: [mongoose.Schema.Types.ObjectId],
+    data: {
+		type: Array,
 	},
 	startDate: {
 		type: Date,
 		required: true,
 	},
 	dueDate: {
-		type: Date,
+		type: String,
 		required: true,
 	},
 });

@@ -7,8 +7,8 @@ require("dotenv").config();
 
 const authRoute = require("./routes/auth");
 const usersRoute = require("./routes/users");
-const leadsRoute = require("./routes/leads");
-const contactsRoute = require("./routes/contacts");
+const ongoingProjects = require("./routes/ongoingProjects");
+const Milestone = require("./routes/Milestone");
 const serviceRequestsRoute = require("./routes/serviceRequests");
 const statsRoute = require("./routes/stats");
 const tasks = require("./routes/tasks");
@@ -42,8 +42,8 @@ app.use("/api/auth", authRoute.router);
 app.use("/api/users/employee", usersRoute);
 app.use("/api/tasks", tasks);
 app.use("/api/completedprojects", completedProject);
-app.use("/api/contacts", contactsRoute);
-app.use("/api/serviceRequests", serviceRequestsRoute);
+app.use("/api/ongoingprojects", ongoingProjects);
+app.use("/api/milestone", Milestone);
 app.use("/api/stats", statsRoute);
 
 app.get("/", (req, res) => {
