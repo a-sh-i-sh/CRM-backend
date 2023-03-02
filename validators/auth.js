@@ -7,6 +7,9 @@ const registerValidation = async (data) => {
     email: Joi.string().required().email(),
     password: Joi.string().required(),
     role: Joi.string(),
+    designation: Joi.string().required(),
+    gender: Joi.string().required(),
+    dob: Joi.string().required()
   });
   return await schema.validate(data);
 };

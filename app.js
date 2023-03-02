@@ -11,6 +11,8 @@ const leadsRoute = require("./routes/leads");
 const contactsRoute = require("./routes/contacts");
 const serviceRequestsRoute = require("./routes/serviceRequests");
 const statsRoute = require("./routes/stats");
+const tasks = require("./routes/tasks");
+const completedProject = require("./routes/completedProject");
 
 const PORT = process.env.PORT || 5000;
 const ORIGIN = process.env.ORIGIN;
@@ -38,7 +40,8 @@ app.use(bodyParser.json())
 app.use(helmet());
 app.use("/api/auth", authRoute.router);
 app.use("/api/users/employee", usersRoute);
-app.use("/api/leads", leadsRoute);
+app.use("/api/tasks", tasks);
+app.use("/api/completedprojects", completedProject);
 app.use("/api/contacts", contactsRoute);
 app.use("/api/serviceRequests", serviceRequestsRoute);
 app.use("/api/stats", statsRoute);

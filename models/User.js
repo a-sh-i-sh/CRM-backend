@@ -14,30 +14,36 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  dob: {
+    type: String,
+  },
   password: {
     type: String,
     required: true,
   },
   role: {
     type: String,
-    required: true,
   },
   gender: {
     type: String,
-    required: true,
   },
   designation: {
     type: String,
-    required: true,
   },
-  experience: {
-    type: Number,
-    required: true,
-  },
-  profilePic: {
-    type: File,
-    required: true,
-  }
+  // profilePic: {
+  //   // type: File,
+  //   required: true,
+  // }
+ 
 });
+// userSchema.methods.addTasks = async function (task, assigned_by, status, estimateTime) {
+//   try {
+//     this.tasks = this.tasks.concat({ task, assigned_by, status, estimateTime });
+//     await this.save();
+//     return this.tasks;
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
 
 module.exports = mongoose.model("User", userSchema);

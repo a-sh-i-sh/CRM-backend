@@ -89,6 +89,7 @@ const createAdmin = async () => {
 router.post("/createuser", verifyToken, async (req, res) => {
   // Validate registration form data
   // delete confirm password cause validation schema does not have this field
+  console.log(req.body);
   delete req.body.confirmPassword;
   const { error } = registerValidation(req.body);
   if (error) {
@@ -120,8 +121,11 @@ router.post("/createuser", verifyToken, async (req, res) => {
       users.firstName = req.body.firstName;
       users.lastName = req.body.lastName;
       users.email = req.body.email;
+      users.dob = req.body.dob;
+      users.designation = req.body.designation;
+      users.gender = req.body.gender;
       users.password = hashPassword;
-      users.role = "Employee";
+      users.role = req.body.role;
 
       const savedUser = await users.save();
       res.status(201).json({
@@ -145,7 +149,10 @@ router.post("/createuser", verifyToken, async (req, res) => {
         lastName: req.body.lastName,
         email: req.body.email,
         password: hashPassword,
-        role: "Employee",
+        dob : req.body.dob,
+        designation : req.body.designation,
+        gender : req.body.gender,
+        role: req.body.role,
       });
 
       const savedUser = await newUser.save();
